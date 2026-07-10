@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalque — translation that keeps the shape</title>
+<meta name="description" content="Kalque translates technical and scientific documents without breaking them — figures, formulas and references verified intact.">
+<style>
+:root{--ink:#14213D;--accent:#2D5BE3;--paper:#FCFBF7;--wash:#EFEDE6;--green:#1C7C46;--amber:#B4690E;--border:#E3E0D4}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55}
+h1,h2,h3,.serif{font-family:Georgia,"Times New Roman",serif;letter-spacing:-.5px}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;gap:16px;flex-wrap:wrap}
+nav .links{display:flex;gap:22px;align-items:center;font-size:15px}
+nav a{color:var(--ink);text-decoration:none}
+nav a:hover{color:var(--accent)}
+.logo{display:flex;align-items:center;gap:10px;font-family:Georgia,serif;font-weight:700;font-size:24px}
+.btn{display:inline-block;background:var(--accent);color:#fff!important;padding:11px 22px;border-radius:8px;font-weight:600;text-decoration:none;font-size:15px;border:none;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)!important;border:1.5px solid var(--accent)}
+.hero{padding:64px 0 30px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:44px;align-items:center}
+.hero>div{min-width:0}
+.hero h1{font-size:46px;line-height:1.12;margin-bottom:18px}
+.hero .pt{color:var(--accent);font-style:italic;font-size:19px;margin-bottom:8px}
+.hero p.sub{font-size:18px;color:#3c4763;margin-bottom:26px;max-width:34em}
+.badge{display:inline-flex;align-items:center;gap:7px;background:#e7f3ec;color:var(--green);border-radius:20px;padding:4px 14px;font-weight:600;font-size:13px;margin-bottom:18px}
+.pages{position:relative}
+.pages svg{width:100%;max-width:100%;height:auto;display:block}
+section{padding:56px 0}
+section.alt{background:var(--wash)}
+h2{font-size:32px;margin-bottom:10px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.lead{font-size:17px;color:#3c4763;max-width:44em;margin-bottom:34px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px;box-shadow:0 2px 24px rgba(20,33,61,.06)}
+.card h3{font-size:19px;margin-bottom:8px}
+.card p{font-size:14.5px;color:#3c4763}
+.quote{background:#fff;border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:8px;padding:16px 18px;margin-bottom:14px}
+.quote p{font-size:15px;font-style:italic;color:#333f5c}
+.quote cite{display:block;font-size:12.5px;color:#77809a;margin-top:8px;font-style:normal}
+.quote cite a{color:var(--accent);text-decoration:none}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:step}
+.step{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px}
+.step::before{counter-increment:step;content:counter(step);display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin-bottom:12px}
+.step h3{font-size:16.5px;margin-bottom:6px}
+.step p{font-size:13.5px;color:#3c4763}
+.report{background:#fff;border:1px solid var(--border);border-left:4px solid var(--green);border-radius:10px;padding:22px 26px;max-width:520px;box-shadow:0 2px 24px rgba(20,33,61,.08)}
+.report h3{font-size:17px;margin-bottom:4px}
+.report .doc{font-size:13px;color:#77809a;margin-bottom:14px}
+.report table{width:100%;border-collapse:collapse;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:13.5px}
+.report td{padding:7px 0;border-bottom:1px dashed var(--border)}
+.report td:last-child{text-align:right;color:var(--green);font-weight:700}
+.report .stamp{margin-top:14px;font-size:12px;color:#77809a;display:flex;justify-content:space-between;align-items:center}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center}
+.grid2>div{min-width:0}
+.price{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.plan{background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px;display:flex;flex-direction:column}
+.plan.hot{border:2px solid var(--accent)}
+.plan .tag{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.plan .amount{font-family:Georgia,serif;font-size:34px;margin:8px 0 2px}
+.plan .per{font-size:12.5px;color:#77809a;margin-bottom:12px}
+.plan ul{padding-left:18px;font-size:13.5px;color:#3c4763;flex:1}
+.plan li{margin-bottom:6px}
+.plan .btn{margin-top:14px;text-align:center}
+.faq details{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:10px}
+.faq summary{font-weight:600;cursor:pointer;font-size:15.5px}
+.faq p{font-size:14.5px;color:#3c4763;margin-top:10px}
+footer{padding:36px 0 48px;font-size:13px;color:#77809a}
+footer a{color:var(--accent)}
+.evidence-note{font-size:12.5px;color:#77809a;margin-top:18px}
+.evidence-note a{color:var(--accent)}
+@media(max-width:840px){
+ .hero{grid-template-columns:minmax(0,1fr);padding-top:36px}
+ .hero h1{font-size:34px}
+ .cards,.steps,.price{grid-template-columns:1fr 1fr}
+ .grid2{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:560px){
+ .cards,.steps,.price{grid-template-columns:1fr}
+ nav .links{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <span class="logo"><svg viewBox="0 0 132 96" width="40" height="29" xmlns="http://www.w3.org/2000/svg"><g><rect x="8" y="12" width="52" height="72" rx="7" fill="none" stroke="#14213D" stroke-width="6"/><line x1="20" y1="31" x2="48" y2="31" stroke="#14213D" stroke-width="6" stroke-linecap="round"/><rect x="20" y="48" width="13" height="13" rx="2" fill="#14213D"/><line x1="20" y1="74" x2="48" y2="74" stroke="#14213D" stroke-width="4" stroke-dasharray="1 6" stroke-linecap="round"/></g><g><rect x="72" y="12" width="52" height="72" rx="7" fill="none" stroke="#2D5BE3" stroke-width="6"/><line x1="84" y1="31" x2="112" y2="31" stroke="#2D5BE3" stroke-width="6" stroke-linecap="round"/><rect x="84" y="48" width="13" height="13" rx="2" fill="#2D5BE3"/><line x1="84" y1="74" x2="112" y2="74" stroke="#2D5BE3" stroke-width="4" stroke-dasharray="1 6" stroke-linecap="round"/></g></svg>kalque</span>
+  <span class="links">
+    <a href="#problem">Why</a><a href="#how">How it works</a><a href="#proof">Proof</a><a href="#pricing">Pricing</a>
+    <a class="btn" href="app.html">Try the live demo</a>
+  </span>
+</nav>
+
+<div class="hero">
+  <div>
+    <span class="badge">✓ Fidelity-verified translation</span>
+    <p class="pt serif">Tradução que mantém a forma.</p>
+    <h1>Translate the paper.<br>Keep the shape.</h1>
+    <p class="sub">Kalque translates scientific papers, technical books and course packs into your language — with every figure in place, every formula untouched, every reference intact. Then it hands you the report that proves it.</p>
+    <a class="btn" href="app.html">See a real 26-page paper translated →</a>
+    <a class="btn ghost" style="margin-left:10px" href="#proof">Read the fidelity report</a>
+  </div>
+  <div class="pages">
+    <svg viewBox="0 0 460 330" xmlns="http://www.w3.org/2000/svg" aria-label="Two identical documents, one translated">
+      <rect x="10" y="15" width="210" height="300" rx="10" fill="#fff" stroke="#14213D" stroke-width="3"/>
+      <text x="28" y="52" font-family="Georgia" font-size="14" font-weight="bold" fill="#14213D">The manifold costs of</text>
+      <text x="28" y="70" font-family="Georgia" font-size="14" font-weight="bold" fill="#14213D">being a non-native…</text>
+      <line x1="28" y1="92" x2="200" y2="92" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="28" y1="106" x2="188" y2="106" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="28" y1="120" x2="196" y2="120" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <rect x="28" y="138" width="80" height="60" rx="4" fill="#EFEDE6" stroke="#14213D" stroke-width="2"/>
+      <path d="M36 186 l16 -22 l14 12 l18 -26 l16 36 z" fill="#2D5BE3" opacity=".65"/>
+      <line x1="120" y1="146" x2="200" y2="146" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="120" y1="160" x2="192" y2="160" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="120" y1="174" x2="198" y2="174" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="120" y1="188" x2="180" y2="188" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <text x="28" y="226" font-family="Menlo, monospace" font-size="11" fill="#14213D">E = mc²  (eq. 4)</text>
+      <line x1="28" y1="248" x2="200" y2="248" stroke="#d8dbe4" stroke-width="2"/>
+      <text x="28" y="268" font-family="Menlo, monospace" font-size="9" fill="#77809a">[12] Amano T, et al. (2023)</text>
+      <text x="28" y="284" font-family="Menlo, monospace" font-size="9" fill="#77809a">[13] Ramírez-Castañeda V.</text>
+      <rect x="240" y="15" width="210" height="300" rx="10" fill="#fff" stroke="#2D5BE3" stroke-width="3"/>
+      <text x="258" y="52" font-family="Georgia" font-size="14" font-weight="bold" fill="#2D5BE3">Os múltiplos custos de</text>
+      <text x="258" y="70" font-family="Georgia" font-size="14" font-weight="bold" fill="#2D5BE3">ser um falante não…</text>
+      <line x1="258" y1="92" x2="430" y2="92" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="258" y1="106" x2="418" y2="106" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="258" y1="120" x2="426" y2="120" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <rect x="258" y="138" width="80" height="60" rx="4" fill="#EFEDE6" stroke="#2D5BE3" stroke-width="2"/>
+      <path d="M266 186 l16 -22 l14 12 l18 -26 l16 36 z" fill="#2D5BE3" opacity=".65"/>
+      <line x1="350" y1="146" x2="430" y2="146" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="350" y1="160" x2="422" y2="160" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="350" y1="174" x2="428" y2="174" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="350" y1="188" x2="410" y2="188" stroke="#9aa3b8" stroke-width="4" stroke-linecap="round"/>
+      <text x="258" y="226" font-family="Menlo, monospace" font-size="11" fill="#14213D">E = mc²  (eq. 4)</text>
+      <line x1="258" y1="248" x2="430" y2="248" stroke="#d8dbe4" stroke-width="2"/>
+      <text x="258" y="268" font-family="Menlo, monospace" font-size="9" fill="#77809a">[12] Amano T, et al. (2023)</text>
+      <text x="258" y="284" font-family="Menlo, monospace" font-size="9" fill="#77809a">[13] Ramírez-Castañeda V.</text>
+      <g><circle cx="230" cy="165" r="17" fill="#1C7C46"/><path d="M222 165 l6 6 l11 -12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+    </svg>
+  </div>
+</div>
+</div>
+
+<section class="alt" id="problem">
+<div class="wrap">
+  <p class="kicker">The problem</p>
+  <h2>Every translator claims it keeps formatting.<br>Their own docs say otherwise.</h2>
+  <p class="lead">These aren't our words — they're the incumbents' documentation and real users, verbatim. Every quote links to its source.</p>
+  <div class="grid2">
+    <div>
+      <div class="quote"><p>"You can find text in images and scanned .pdf pages in the output document but they aren't translated."</p><cite>Google Translate official help — <a href="https://support.google.com/translate/answer/2534559">support.google.com</a></cite></div>
+      <div class="quote"><p>"Data tables, multi-column formats, and labeled graphs — may experience some formatting loss in PDFs."</p><cite>Google Cloud Translation docs — <a href="https://docs.cloud.google.com/translate/docs/advanced/translate-documents">docs.cloud.google.com</a></cite></div>
+      <div class="quote"><p>"It destroys the formatting completely. It changes the font, the font size and often the color." — confirmed by Microsoft: "yes the fonts, font size, and font color changed."</p><cite>Microsoft Q&amp;A — <a href="https://learn.microsoft.com/en-us/answers/questions/5035817/formatting-destroyed-when-translated-using-transla">learn.microsoft.com</a></cite></div>
+    </div>
+    <div>
+      <div class="quote"><p>"There's a lot of services which can do this, but those break the formatting. I've even tried to make a custom python app to do this, but the formatting breaks always."</p><cite>r/machinetranslation, Feb 2025 — <a href="https://reddit.com/r/machinetranslation/comments/1ij9t3g/pdf_translation_with_ai_api_keeping_the_formatting/">reddit.com</a></cite></div>
+      <div class="quote"><p>"Professional translators charge €1,000 to €3,000 per book, and take 2–3 weeks to deliver."</p><cite>r/selfpublish (author of 250+ books) — <a href="https://reddit.com/r/selfpublish/comments/1k1x9vh/if_youve_ever_paid_3000_to_translate_a_book_this/">reddit.com</a></cite></div>
+      <div class="quote"><p>"Parsing problems in author/reference sections (resulting in merged paragraphs)."</p><cite>Self-admitted limitation, README of the leading open-source engine — <a href="https://github.com/funstory-ai/BabelDOC">github.com/funstory-ai/BabelDOC</a></cite></div>
+    </div>
+  </div>
+  <p class="evidence-note">The cost of this mess is peer-reviewed: non-native English speakers spend <b>46.6–90.8% more time</b> reading and <b>~30–50% more time</b> writing papers in English — about <b>19 extra working days a year</b> (<a href="https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3002184">Amano et al. 2023, PLOS Biology, n=908</a>).</p>
+</div>
+</section>
+
+<section id="how">
+<div class="wrap">
+  <p class="kicker">How it works</p>
+  <h2>Structure first. Translation second. Proof always.</h2>
+  <p class="lead">Kalque never feeds your document to a translator as a blob of text. It builds a structural model first, locks everything that must not change, and verifies the result segment by segment.</p>
+  <div class="steps">
+    <div class="step"><h3>Parse</h3><p>Your PDF/EPUB/DOCX becomes a document model: sections, paragraphs, figures, equations, references, cross-links.</p></div>
+    <div class="step"><h3>Protect</h3><p>Citations, formulas, numbers, links and figure anchors are sealed as untouchable tokens. References are never translated — by rule.</p></div>
+    <div class="step"><h3>Translate</h3><p>An LLM engine translates segment by segment with your field's terminology — context-aware, register-aware, glossary-locked.</p></div>
+    <div class="step"><h3>Verify</h3><p>Every segment is machine-checked: tokens, numbers, tags, coverage. You get the document — and the Fidelity Report.</p></div>
+  </div>
+</div>
+</section>
+
+<section class="alt" id="proof">
+<div class="wrap">
+  <div class="grid2">
+    <div>
+      <p class="kicker">Proof, not promises</p>
+      <h2>The Fidelity Report</h2>
+      <p class="lead" style="margin-bottom:16px">This is a real report from a real job: the 2023 PLOS Biology paper on language barriers in science — 26 published pages, 6 figures, 51 references, 6,352 words — translated EN → PT-BR by the demo pipeline in this repo.</p>
+      <p style="font-size:14.5px;color:#3c4763">If a check ever fails, you see exactly which segment and why, before you pay. That's the deal: <b>we show our work, or you don't trust us.</b></p>
+      <p style="margin-top:20px"><a class="btn" href="app.html">Open the demo & the full documents →</a></p>
+    </div>
+    <div class="report">
+      <h3>Fidelity Report</h3>
+      <p class="doc">Amano et al. (2023) · PLOS Biology · EN → PT-BR · 79 segments</p>
+      <table>
+        <tr><td>Coverage — every segment translated</td><td>79/79 ✓</td></tr>
+        <tr><td>Citation &amp; link tokens intact</td><td>79/79 ✓</td></tr>
+        <tr><td>Numbers &amp; statistics preserved</td><td>79/79 ✓</td></tr>
+        <tr><td>Formatting tags balanced</td><td>79/79 ✓</td></tr>
+        <tr><td>References translated (by rule: never)</td><td>0/51 ✓</td></tr>
+      </table>
+      <div class="stamp"><span>Generated by qa_check.py · 2026-07-09</span><span class="serif" style="font-weight:700">kalque</span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="pricing">
+<div class="wrap">
+  <p class="kicker">Pricing</p>
+  <h2>Between “free but broken” and “$3,000 and three weeks.”</h2>
+  <p class="lead">Human translation of a technical book runs €1,000–3,000 (and $0.06–0.11/word at academic services). Free tools cap at 300 pages and break your figures. Kalque sits deliberately in the gap.</p>
+  <div class="price">
+    <div class="plan"><span class="tag">Preview</span><div class="amount">$0</div><div class="per">any document</div><ul><li>First 5 pages translated</li><li>Full Fidelity Report visible</li><li>Watermarked output</li></ul><a class="btn ghost" href="app.html">Try it</a></div>
+    <div class="plan hot"><span class="tag">Per document</span><div class="amount">$9</div><div class="per">up to 50 pages · $19 up to 150</div><ul><li>Paper, thesis chapter, course pack</li><li>Side-by-side review view</li><li>Fidelity Report certificate</li></ul><a class="btn" href="app.html">Translate a document</a></div>
+    <div class="plan"><span class="tag">Book</span><div class="amount">$79</div><div class="per">up to 500 pages</div><ul><li>No page caps by design</li><li>Chapter-by-chapter delivery</li><li>Glossary locked across the book</li></ul><a class="btn ghost" href="app.html">Start a book</a></div>
+    <div class="plan"><span class="tag">Pro / Lab</span><div class="amount">$15</div><div class="per">per month · labs from $99</div><ul><li>300 pooled pages/mo</li><li>Discipline glossaries</li><li>Team library &amp; invoicing</li></ul><a class="btn ghost" href="app.html">Go Pro</a></div>
+  </div>
+</div>
+</section>
+
+<section class="alt">
+<div class="wrap faq">
+  <p class="kicker">Honest FAQ</p>
+  <h2>What breaks, what doesn't</h2>
+  <p class="lead">Per our own voice rules: admit limits before you find them.</p>
+  <details><summary>What does Kalque handle well today?</summary><p>Born-digital scientific PDFs and structured formats (JATS XML, EPUB, DOCX, LaTeX-derived PDFs): body text, headings, figure captions, tables, inline/display math (protected, never re-typeset), citations and reference lists (protected, never translated). The demo in this repo is a full 26-page paper with 6 figures and 51 references, all checks green.</p></details>
+  <details><summary>What is still hard?</summary><p>Scanned/photographed documents (OCR introduces its own errors — same caveat DeepL makes), handwritten notes, text drawn inside figure images (we preserve the figure; we don't yet repaint the labels), poetry and wordplay, and right-to-left scripts (roadmap). If your document is one of these, the free preview will show you exactly what you'd get before any payment.</p></details>
+  <details><summary>Is this just a wrapper around Google Translate?</summary><p>No. The translation layer is an LLM engine chosen for context-awareness (the same class of model users report as "100% accurate and native" in the research linked above), but the product is the structure model around it: parse → protect → translate → verify. The verify step alone — the Fidelity Report — doesn't exist in any tool we benchmarked (14 competitors, table in the repo).</p></details>
+  <details><summary>Can I translate a book I bought?</summary><p>For your own personal reading, translating a lawfully obtained copy is broadly analogous to format-shifting, but laws differ by country and redistribution is never OK. Kalque stamps outputs with source attribution and license notes (the demo carries its CC-BY line), and personal-use terms are enforced at checkout. Publishers get a separate licensed workflow.</p></details>
+  <details><summary>Do you keep my documents?</summary><p>Processing is job-scoped; files are deleted after delivery unless you opt into a library. (Commitment for launch; infrastructure details will be published when the hosted service ships.)</p></details>
+</div>
+</section>
+
+<div class="wrap">
+<footer>
+  <b class="serif" style="font-size:16px">kalque</b> · translation that keeps the shape · tradução que mantém a forma<br><br>
+  Demo document: Amano T, et al. (2023) "The manifold costs of being a non-native English speaker in science", PLOS Biology, <a href="https://doi.org/10.1371/journal.pbio.3002184">DOI 10.1371/journal.pbio.3002184</a>, CC BY 4.0 — translated by Kalque's pipeline as a demonstration; the original remains at journals.plos.org.<br>
+  Every claim on this page traces to a fetched source, catalogued in <span style="font-family:ui-monospace,Menlo,monospace">research/</span> in this repository. Local demo build — nothing on this page is deployed or for sale yet.
+</footer>
+</div>
+</body>
+</html>

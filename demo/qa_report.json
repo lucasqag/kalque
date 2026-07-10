@@ -1,0 +1,26 @@
+{
+ "segments": 79,
+ "checks": [
+  {
+   "name": "coverage",
+   "passed": 79,
+   "total": 79
+  },
+  {
+   "name": "token_safety",
+   "passed": 79,
+   "total": 79
+  },
+  {
+   "name": "number_safety",
+   "passed": 79,
+   "total": 79
+  },
+  {
+   "name": "tag_safety",
+   "passed": 79,
+   "total": 79
+  }
+ ],
+ "failures": []
+}

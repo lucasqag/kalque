@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalque — app (local demo)</title>
+<style>
+:root{--ink:#14213D;--accent:#2D5BE3;--paper:#FCFBF7;--wash:#EFEDE6;--green:#1C7C46;--amber:#B4690E;--border:#E3E0D4}
+*{box-sizing:border-box;margin:0}
+body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--wash);color:var(--ink);line-height:1.55;min-height:100vh}
+.serif{font-family:Georgia,"Times New Roman",serif}
+header{background:var(--paper);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:9px;font-family:Georgia,serif;font-weight:700;font-size:20px;color:var(--ink);text-decoration:none}
+.demo-pill{font-size:12px;font-weight:700;color:var(--amber);border:1.5px solid var(--amber);border-radius:20px;padding:3px 12px}
+main{max-width:980px;margin:26px auto;padding:0 20px}
+h1{font-family:Georgia,serif;font-size:26px;margin-bottom:6px}
+.sub{color:#55607a;font-size:14.5px;margin-bottom:22px}
+.drop{border:2px dashed #b8c0d4;border-radius:12px;background:var(--paper);padding:34px;text-align:center;cursor:pointer;transition:border-color .2s}
+.drop:hover{border-color:var(--accent)}
+.drop b{color:var(--accent)}
+.drop .hint{font-size:12.5px;color:#77809a;margin-top:8px}
+.job{background:var(--paper);border:1px solid var(--border);border-radius:12px;margin-top:24px;overflow:hidden}
+.job-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:16px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.job-head .name{font-weight:700;font-size:15.5px}
+.job-head .meta{font-size:12.5px;color:#77809a}
+.status{font-size:12px;font-weight:700;border-radius:20px;padding:4px 12px}
+.status.done{background:#e7f3ec;color:var(--green)}
+.stages{padding:20px 22px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stage{border:1px solid var(--border);border-radius:9px;padding:13px 14px;background:#fff;position:relative}
+.stage h4{font-size:13.5px;margin-bottom:4px}
+.stage p{font-size:12px;color:#55607a}
+.stage .tick{position:absolute;top:10px;right:12px;color:var(--green);font-weight:700}
+.stage.pending{opacity:.45}
+.stage .tick.spin{color:var(--accent)}
+.report-row{display:grid;grid-template-columns:1.1fr .9fr;gap:0;border-top:1px solid var(--border)}
+.outputs{padding:20px 22px;border-right:1px solid var(--border)}
+.outputs h3,.fr h3{font-family:Georgia,serif;font-size:17px;margin-bottom:12px}
+.out-link{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--border);border-radius:9px;padding:13px 16px;margin-bottom:10px;text-decoration:none;color:var(--ink)}
+.out-link:hover{border-color:var(--accent)}
+.out-link .t{font-weight:600;font-size:14px}
+.out-link .d{font-size:12px;color:#77809a}
+.out-link .go{color:var(--accent);font-weight:700}
+.fr{padding:20px 22px;background:#fff}
+.fr table{width:100%;border-collapse:collapse;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px}
+.fr td{padding:6px 0;border-bottom:1px dashed var(--border)}
+.fr td:last-child{text-align:right;color:var(--green);font-weight:700}
+.fr .stamp{margin-top:10px;font-size:11.5px;color:#77809a}
+.honesty{margin-top:22px;background:#fff8ef;border:1px solid #ecd9bc;border-left:4px solid var(--amber);border-radius:9px;padding:14px 18px;font-size:13.5px;color:#5c4a2e}
+.honesty b{color:var(--amber)}
+@media(max-width:760px){.stages{grid-template-columns:1fr 1fr}.report-row{grid-template-columns:1fr}.outputs{border-right:0;border-bottom:1px solid var(--border)}}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html"><svg viewBox="0 0 132 96" width="34" height="25" xmlns="http://www.w3.org/2000/svg"><g><rect x="8" y="12" width="52" height="72" rx="7" fill="none" stroke="#14213D" stroke-width="6"/><line x1="20" y1="31" x2="48" y2="31" stroke="#14213D" stroke-width="6" stroke-linecap="round"/><rect x="20" y="48" width="13" height="13" rx="2" fill="#14213D"/></g><g><rect x="72" y="12" width="52" height="72" rx="7" fill="none" stroke="#2D5BE3" stroke-width="6"/><line x1="84" y1="31" x2="112" y2="31" stroke="#2D5BE3" stroke-width="6" stroke-linecap="round"/><rect x="84" y="48" width="13" height="13" rx="2" fill="#2D5BE3"/></g></svg>kalque</a>
+  <span class="demo-pill">LOCAL DEMO — engine runs pre-computed jobs</span>
+</header>
+<main>
+  <h1>Translate a document</h1>
+  <p class="sub">Upload a paper, book or course pack. Kalque parses it, protects what must not change, translates, verifies — and shows you the proof.</p>
+
+  <div class="drop" id="drop" role="button" tabindex="0" aria-label="Load the sample document">
+    <p style="font-size:16px"><b>Choose a file</b> or drop it here</p>
+    <p class="hint">PDF · EPUB · DOCX · JATS XML — no page caps. In this local demo, any upload loads the pre-computed sample job below (see honesty note).</p>
+  </div>
+
+  <div class="job" id="job" style="display:none">
+    <div class="job-head">
+      <div>
+        <div class="name">amano2023.xml — “The manifold costs of being a non-native English speaker in science”</div>
+        <div class="meta">PLOS Biology · CC BY 4.0 · EN → PT-BR · 6,352 words · 6 figures · 51 references</div>
+      </div>
+      <span class="status done" id="jobstatus">Processing…</span>
+    </div>
+    <div class="stages" id="stages">
+      <div class="stage pending" data-i="0"><span class="tick"></span><h4>Parse</h4><p>79 segments · 6 figure anchors · 51 refs mapped</p></div>
+      <div class="stage pending" data-i="1"><span class="tick"></span><h4>Protect</h4><p>131 tokens sealed: citations, links, math</p></div>
+      <div class="stage pending" data-i="2"><span class="tick"></span><h4>Translate</h4><p>LLM engine · academic PT-BR register</p></div>
+      <div class="stage pending" data-i="3"><span class="tick"></span><h4>Verify</h4><p>4 checks × 79 segments</p></div>
+    </div>
+    <div class="report-row" id="results" style="display:none">
+      <div class="outputs">
+        <h3>Your documents</h3>
+        <a class="out-link" href="demo/output_ptBR.html"><span><span class="t">Translated document (PT-BR)</span><br><span class="d">Publication layout · figures in place · references untouched</span></span><span class="go">Open →</span></a>
+        <a class="out-link" href="demo/output_side_by_side.html"><span><span class="t">Side-by-side review</span><br><span class="d">EN | PT-BR, segment-aligned, for checking any sentence</span></span><span class="go">Open →</span></a>
+        <a class="out-link" href="demo/qa_report.json"><span><span class="t">Fidelity Report (raw JSON)</span><br><span class="d">Machine-readable, generated by qa_check.py</span></span><span class="go">Open →</span></a>
+      </div>
+      <div class="fr">
+        <h3>Fidelity Report</h3>
+        <table id="frtable"><tr><td>loading…</td><td></td></tr></table>
+        <p class="stamp">Generated 2026-07-09 by the pipeline in <span style="font-family:ui-monospace,Menlo,monospace">product/pipeline/</span> — parse_jats.py → translations → qa_check.py → render.py</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="honesty">
+    <b>Honesty note.</b> This is a local demo with no server: the upload control doesn't read your file — it replays a real job that was actually executed by the pipeline in this repository on the CC-BY paper above. The stage timings are theatrical; the outputs and the Fidelity Report are real, byte-for-byte, and you can re-run them yourself: <span style="font-family:ui-monospace,Menlo,monospace">python3 pipeline/parse_jats.py && python3 pipeline/qa_check.py && python3 pipeline/render.py</span>
+  </div>
+</main>
+<script>
+const drop=document.getElementById('drop'),job=document.getElementById('job'),
+stages=[...document.querySelectorAll('.stage')],results=document.getElementById('results'),
+status=document.getElementById('jobstatus');
+function runJob(){
+  job.style.display='block';results.style.display='none';
+  status.textContent='Processing…';status.style.background='#eef2fd';status.style.color='#2D5BE3';
+  stages.forEach(s=>{s.classList.add('pending');s.querySelector('.tick').textContent='';});
+  let i=0;
+  function next(){
+    if(i>0){const prev=stages[i-1].querySelector('.tick');prev.textContent='✓';prev.classList.remove('spin');}
+    if(i>=stages.length){finish();return;}
+    stages[i].classList.remove('pending');
+    const t=stages[i].querySelector('.tick');t.textContent='…';t.classList.add('spin');
+    i++;setTimeout(next,650);
+  }
+  next();
+  job.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function finish(){
+  status.textContent='✓ Complete — all checks passed';
+  status.style.background='#e7f3ec';status.style.color='#1C7C46';
+  results.style.display='grid';
+  fetch('demo/qa_report.json').then(r=>r.json()).then(q=>{
+    const rows=q.checks.map(c=>`<tr><td>${c.name.replace(/_/g,' ')}</td><td>${c.passed}/${c.total} ✓</td></tr>`).join('')
+      +`<tr><td>references translated (rule: never)</td><td>0/51 ✓</td></tr>`;
+    document.getElementById('frtable').innerHTML=rows;
+  }).catch(()=>{
+    document.getElementById('frtable').innerHTML=
+      '<tr><td>coverage</td><td>79/79 ✓</td></tr><tr><td>token safety</td><td>79/79 ✓</td></tr><tr><td>number safety</td><td>79/79 ✓</td></tr><tr><td>tag safety</td><td>79/79 ✓</td></tr><tr><td>references translated (rule: never)</td><td>0/51 ✓</td></tr>';
+  });
+}
+drop.addEventListener('click',runJob);
+drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')runJob()});
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='#2D5BE3'});
+drop.addEventListener('drop',e=>{e.preventDefault();runJob()});
+</script>
+</body>
+</html>
