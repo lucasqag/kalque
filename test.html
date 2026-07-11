@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalque — teste real</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#14213D;--accent:#2D5BE3;--paper:#FCFBF7;--wash:#EFEDE6;--green:#1C7C46;--amber:#B4690E;--border:#E3E0D4}
+*{box-sizing:border-box;margin:0}
+body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--wash);color:var(--ink);line-height:1.5;min-height:100vh}
+header{background:var(--ink);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+header b{font-family:Georgia,serif;font-size:20px}
+main{max-width:720px;margin:24px auto;padding:0 16px}
+section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:18px}
+h2{font-family:Georgia,serif;font-size:17px;margin-bottom:12px}
+label{display:block;font-size:13px;color:#55607a;margin:10px 0 4px}
+input,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px}
+button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:600;cursor:pointer;font-size:14px;margin-top:12px}
+button.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.pill{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;margin-left:8px}
+.pill.ok{background:#e7f3ec;color:var(--green)}
+.pill.warn{background:#fff3e2;color:var(--amber)}
+.pill.err{background:#fde8e8;color:#c0392b}
+.msg{font-size:13px;padding:10px 14px;border-radius:8px;margin-top:10px}
+.msg.ok{background:#e7f3ec;color:var(--green)}
+.msg.err{background:#fde8e8;color:#c0392b}
+.job{border-top:1px solid var(--border);padding:12px 0;font-size:13.5px}
+.job a{color:var(--accent)}
+#whoami{font-size:13px;color:#cdd9f6}
+</style>
+</head>
+<body>
+<header><b>kalque</b><span id="whoami">não logado</span></header>
+<main>
+
+<section id="auth-box">
+  <h2>1. Entrar ou criar conta</h2>
+  <label>E-mail</label><input id="email" type="email" placeholder="voce@exemplo.com">
+  <label>Senha</label><input id="password" type="password" placeholder="mínimo 6 caracteres">
+  <div class="row">
+    <button onclick="signUp()">Criar conta</button>
+    <button class="ghost" onclick="signIn()">Entrar</button>
+    <button class="ghost" onclick="signOut()" id="logout-btn" style="display:none">Sair</button>
+  </div>
+  <div id="auth-msg"></div>
+</section>
+
+<section id="upload-box" style="display:none">
+  <h2>2. Enviar documento</h2>
+  <label>Arquivo (.pdf, .epub, .xml)</label>
+  <input id="file" type="file" accept=".pdf,.epub,.xml,.jats">
+  <label>Traduzir para</label>
+  <select id="target"></select>
+  <button onclick="uploadFile()">Enviar e calcular preço</button>
+  <div id="upload-msg"></div>
+</section>
+
+<section id="jobs-box" style="display:none">
+  <h2>3. Seus documentos</h2>
+  <div id="jobs-list"></div>
+  <button class="ghost" onclick="loadJobs()">Atualizar lista</button>
+</section>
+
+</main>
+<script>
+const API = "https://kalque-backend-production.up.railway.app";
+const SUPABASE_URL = "https://apcoejxentlkrwiaextl.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwY29lanhlbnRsa3J3aWFleHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3ODkzMDgsImV4cCI6MjA5OTM2NTMwOH0.2KCt2RdO5cphZE4OZrJ-9rr4kVNN8VafheuxJ0woxm4";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let session = null;
+let currentJobId = null;
+
+function showMsg(elId, text, ok) {
+  document.getElementById(elId).innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${text}</div>`;
+}
+
+async function refreshSession() {
+  const { data } = await sb.auth.getSession();
+  session = data.session;
+  document.getElementById('whoami').textContent = session ? session.user.email : 'não logado';
+  document.getElementById('upload-box').style.display = session ? 'block' : 'none';
+  document.getElementById('jobs-box').style.display = session ? 'block' : 'none';
+  document.getElementById('logout-btn').style.display = session ? 'inline-block' : 'none';
+  if (session) loadJobs();
+}
+
+async function signUp() {
+  const email = document.getElementById('email').value, password = document.getElementById('password').value;
+  const { error } = await sb.auth.signUp({ email, password });
+  if (error) return showMsg('auth-msg', error.message, false);
+  showMsg('auth-msg', 'Conta criada. Se a confirmação de e-mail estiver ativada no Supabase, confirme antes de entrar.', true);
+}
+async function signIn() {
+  const email = document.getElementById('email').value, password = document.getElementById('password').value;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) return showMsg('auth-msg', error.message, false);
+  showMsg('auth-msg', 'Login ok.', true);
+  refreshSession();
+}
+async function signOut() { await sb.auth.signOut(); refreshSession(); }
+
+async function loadLanguages() {
+  const res = await fetch(`${API}/api/config`);
+  const cfg = await res.json();
+  const sel = document.getElementById('target');
+  sel.innerHTML = cfg.target_languages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+}
+
+async function authFetch(path, opts = {}) {
+  opts.headers = { ...(opts.headers || {}), Authorization: `Bearer ${session.access_token}` };
+  const res = await fetch(`${API}${path}`, opts);
+  if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+  return res.json();
+}
+
+async function uploadFile() {
+  const file = document.getElementById('file').files[0];
+  const target = document.getElementById('target').value;
+  if (!file) return showMsg('upload-msg', 'Escolha um arquivo primeiro.', false);
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('target_language', target);
+  showMsg('upload-msg', 'Enviando e analisando o documento…', true);
+  try {
+    const data = await authFetch('/api/jobs/upload', { method: 'POST', body: fd });
+    currentJobId = data.job_id;
+    if (data.free) {
+      showMsg('upload-msg', `${data.pages} páginas · grátis (dentro do preview). Iniciando tradução…`, true);
+      await authFetch(`/api/jobs/${data.job_id}/start`, { method: 'POST' });
+      loadJobs();
+    } else {
+      const price = (data.price_cents / 100).toFixed(2);
+      showMsg('upload-msg',
+        `${data.pages} páginas · US$ ${price}. <button onclick="checkout('${data.job_id}')">Pagar e traduzir (Stripe, modo teste)</button>`,
+        true);
+    }
+  } catch (e) { showMsg('upload-msg', e.message, false); }
+}
+
+async function checkout(jobId) {
+  const returnBase = window.location.href.split('?')[0];
+  const data = await authFetch(`/api/jobs/${jobId}/checkout`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ return_base: returnBase }),
+  });
+  window.location.href = data.checkout_url;
+}
+
+async function loadJobs() {
+  const jobs = await authFetch('/api/jobs');
+  const box = document.getElementById('jobs-list');
+  if (!jobs.length) { box.innerHTML = '<p style="color:#77809a;font-size:13px">Nenhum documento ainda.</p>'; return; }
+  box.innerHTML = jobs.map(j => {
+    const pillClass = j.status === 'done' ? 'ok' : j.status === 'failed' ? 'err' : 'warn';
+    let links = '';
+    if (j.status === 'done') links = `<div><button class="ghost" onclick="openJob('${j.id}')">Abrir resultado</button></div>`;
+    if (j.status === 'failed') links = `<div style="color:#c0392b;font-size:12px">${(j.error_message || '').slice(0, 200)}</div>`;
+    return `<div class="job"><b>${j.source_filename}</b> → ${j.target_language}
+      <span class="pill ${pillClass}">${j.status}</span>
+      <div style="color:#77809a">${j.page_count || '?'} páginas · US$ ${(j.price_cents/100).toFixed(2)}</div>
+      ${links}</div>`;
+  }).join('');
+}
+
+async function openJob(jobId) {
+  const job = await authFetch(`/api/jobs/${jobId}`);
+  if (job.urls) {
+    window.open(job.urls.translated.signedURL || job.urls.translated.signed_url, '_blank');
+  }
+}
+
+// on load: restore session, load languages, and handle return from Stripe
+(async () => {
+  await refreshSession();
+  await loadLanguages();
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('paid') === '1' && session) {
+    showMsg('upload-msg', 'Pagamento confirmado — processando (isso pode levar alguns minutos para documentos longos). Atualize a lista abaixo.', true);
+  }
+  sb.auth.onAuthStateChange((_e, s) => { session = s; refreshSession(); });
+})();
+</script>
+</body>
+</html>
