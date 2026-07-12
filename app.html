@@ -201,7 +201,7 @@ async function loadJobs() {
     const pillClass = j.status === 'done' ? 'ok' : j.status === 'failed' ? 'err' : 'warn';
     let extra = '';
     if (j.status === 'done') {
-      extra = `<div><a class="out-link" href="#" onclick="openJob('${j.id}');return false">Open result →</a></div>`;
+      extra = `<div><a class="out-link" href="#" onclick="openJob('${j.id}');return false">⬇ Download PDF</a></div>`;
     } else if (j.status === 'failed') {
       extra = `<div class="err-detail">${(j.error_message || '').slice(0, 200)}</div>`;
     } else {
@@ -226,8 +226,22 @@ function scheduleJobsPoll(active) {
 
 async function openJob(jobId) {
   const job = await authFetch(`/api/jobs/${jobId}`);
-  if (job.urls) {
-    window.open(job.urls.translated.signedURL || job.urls.translated.signed_url, '_blank');
+  const pdf = job.urls && job.urls.pdf;
+  const url = pdf && (pdf.signedURL || pdf.signedUrl || pdf.signed_url);
+  if (url) {
+    // signed URL carries Content-Disposition: attachment, so navigating
+    // to it downloads the PDF (the download attr is ignored cross-origin,
+    // but the header forces the download regardless).
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${job.source_filename}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } else {
+    showMsg('upload-msg',
+      'This document was translated before PDF export was available. Please re-upload it to get a downloadable PDF.',
+      false);
   }
 }
 
