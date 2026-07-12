@@ -38,6 +38,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .job .out-link{display:inline-block;margin-top:8px;color:var(--accent);font-weight:600;text-decoration:none;font-size:13.5px}
 .job .err-detail{color:#c0392b;font-size:12.5px;margin-top:6px}
 .job .meta{color:#77809a;font-size:12.5px;margin-top:2px}
+.progress-wrap{margin-top:10px;display:flex;align-items:center;gap:10px}
+.progress-track{flex:1;height:8px;background:var(--wash);border-radius:20px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:20px;transition:width .5s ease}
+.progress-pct{font-size:12.5px;font-weight:700;color:var(--accent);min-width:34px;text-align:right}
 </style>
 </head>
 <body>
@@ -192,16 +196,32 @@ async function loadJobs() {
   const jobs = await authFetch('/api/jobs');
   const box = document.getElementById('jobs-list');
   if (!jobs.length) { box.innerHTML = '<p style="color:#77809a;font-size:13px">No documents yet.</p>'; return; }
+  const active = jobs.some(j => j.status === 'pending' || j.status === 'paid' || j.status === 'processing');
   box.innerHTML = jobs.map(j => {
     const pillClass = j.status === 'done' ? 'ok' : j.status === 'failed' ? 'err' : 'warn';
     let extra = '';
-    if (j.status === 'done') extra = `<div><a class="out-link" href="#" onclick="openJob('${j.id}');return false">Open result →</a></div>`;
-    if (j.status === 'failed') extra = `<div class="err-detail">${(j.error_message || '').slice(0, 200)}</div>`;
+    if (j.status === 'done') {
+      extra = `<div><a class="out-link" href="#" onclick="openJob('${j.id}');return false">Open result →</a></div>`;
+    } else if (j.status === 'failed') {
+      extra = `<div class="err-detail">${(j.error_message || '').slice(0, 200)}</div>`;
+    } else {
+      const pct = j.status === 'processing' ? (j.progress || 0) : 0;
+      const label = j.status === 'pending' ? 'Waiting to start…' : j.status === 'paid' ? 'Starting…' : `Translating… ${pct}%`;
+      extra = `<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <span class="progress-pct">${pct}%</span></div><div class="meta">${label}</div>`;
+    }
     return `<div class="job"><b>${j.source_filename}</b> → ${j.target_language}
       <span class="pill ${pillClass}">${j.status}</span>
       <div class="meta">${j.page_count || '?'} pages</div>
       ${extra}</div>`;
   }).join('');
+  scheduleJobsPoll(active);
+}
+
+let jobsPollTimer = null;
+function scheduleJobsPoll(active) {
+  clearTimeout(jobsPollTimer);
+  if (active) jobsPollTimer = setTimeout(loadJobs, 2500);
 }
 
 async function openJob(jobId) {
