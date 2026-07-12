@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kalque — app (local demo)</title>
+<title>Kalque — translate a document</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%20role%3D%22img%22%20aria-label%3D%22Kalque%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%2314213D%22/%3E%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23FCFBF7%22%20stroke-width%3D%223.2%22%20stroke-linecap%3D%22round%22%3E%20%3Crect%20x%3D%2214%22%20y%3D%2212%22%20width%3D%2220%22%20height%3D%2227%22%20rx%3D%222.5%22/%3E%20%3Cline%20x1%3D%2218.5%22%20y1%3D%2219%22%20x2%3D%2229.5%22%20y2%3D%2219%22/%3E%20%3Cline%20x1%3D%2218.5%22%20y1%3D%2224.5%22%20x2%3D%2226%22%20y2%3D%2224.5%22/%3E%20%3C/g%3E%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%232D5BE3%22%20stroke-width%3D%223.2%22%20stroke-linecap%3D%22round%22%3E%20%3Crect%20x%3D%2230%22%20y%3D%2225%22%20width%3D%2220%22%20height%3D%2227%22%20rx%3D%222.5%22%20fill%3D%22%2314213D%22/%3E%20%3Cline%20x1%3D%2234.5%22%20y1%3D%2232%22%20x2%3D%2245.5%22%20y2%3D%2232%22/%3E%20%3Cline%20x1%3D%2234.5%22%20y1%3D%2237.5%22%20x2%3D%2242%22%20y2%3D%2237.5%22/%3E%20%3C/g%3E%20%3Cpath%20d%3D%22M39%2044.5%20L43%2048.5%20L51%2039%22%20fill%3D%22none%22%20stroke%3D%22%231C7C46%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%20%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--ink:#14213D;--accent:#2D5BE3;--paper:#FCFBF7;--wash:#EFEDE6;--green:#1C7C46;--amber:#B4690E;--border:#E3E0D4}
 *{box-sizing:border-box;margin:0}
@@ -12,128 +13,214 @@ body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--was
 .serif{font-family:Georgia,"Times New Roman",serif}
 header{background:var(--paper);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:9px;font-family:Georgia,serif;font-weight:700;font-size:20px;color:var(--ink);text-decoration:none}
-.demo-pill{font-size:12px;font-weight:700;color:var(--amber);border:1.5px solid var(--amber);border-radius:20px;padding:3px 12px}
-main{max-width:980px;margin:26px auto;padding:0 20px}
+.whoami{font-size:13px;color:#55607a;display:flex;align-items:center;gap:10px}
+main{max-width:760px;margin:28px auto;padding:0 20px}
 h1{font-family:Georgia,serif;font-size:26px;margin-bottom:6px}
 .sub{color:#55607a;font-size:14.5px;margin-bottom:22px}
-.drop{border:2px dashed #b8c0d4;border-radius:12px;background:var(--paper);padding:34px;text-align:center;cursor:pointer;transition:border-color .2s}
-.drop:hover{border-color:var(--accent)}
-.drop b{color:var(--accent)}
-.drop .hint{font-size:12.5px;color:#77809a;margin-top:8px}
-.job{background:var(--paper);border:1px solid var(--border);border-radius:12px;margin-top:24px;overflow:hidden}
-.job-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:16px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.job-head .name{font-weight:700;font-size:15.5px}
-.job-head .meta{font-size:12.5px;color:#77809a}
-.status{font-size:12px;font-weight:700;border-radius:20px;padding:4px 12px}
-.status.done{background:#e7f3ec;color:var(--green)}
-.stages{padding:20px 22px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stage{border:1px solid var(--border);border-radius:9px;padding:13px 14px;background:#fff;position:relative}
-.stage h4{font-size:13.5px;margin-bottom:4px}
-.stage p{font-size:12px;color:#55607a}
-.stage .tick{position:absolute;top:10px;right:12px;color:var(--green);font-weight:700}
-.stage.pending{opacity:.45}
-.stage .tick.spin{color:var(--accent)}
-.report-row{display:grid;grid-template-columns:1.1fr .9fr;gap:0;border-top:1px solid var(--border)}
-.outputs{padding:20px 22px;border-right:1px solid var(--border)}
-.outputs h3,.fr h3{font-family:Georgia,serif;font-size:17px;margin-bottom:12px}
-.out-link{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--border);border-radius:9px;padding:13px 16px;margin-bottom:10px;text-decoration:none;color:var(--ink)}
-.out-link:hover{border-color:var(--accent)}
-.out-link .t{font-weight:600;font-size:14px}
-.out-link .d{font-size:12px;color:#77809a}
-.out-link .go{color:var(--accent);font-weight:700}
-.fr{padding:20px 22px;background:#fff}
-.fr table{width:100%;border-collapse:collapse;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px}
-.fr td{padding:6px 0;border-bottom:1px dashed var(--border)}
-.fr td:last-child{text-align:right;color:var(--green);font-weight:700}
-.fr .stamp{margin-top:10px;font-size:11.5px;color:#77809a}
-.honesty{margin-top:22px;background:#fff8ef;border:1px solid #ecd9bc;border-left:4px solid var(--amber);border-radius:9px;padding:14px 18px;font-size:13.5px;color:#5c4a2e}
-.honesty b{color:var(--amber)}
-@media(max-width:760px){.stages{grid-template-columns:1fr 1fr}.report-row{grid-template-columns:1fr}.outputs{border-right:0;border-bottom:1px solid var(--border)}}
+section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:20px}
+h2{font-family:Georgia,serif;font-size:18px;margin-bottom:14px}
+label{display:block;font-size:13px;color:#55607a;margin:12px 0 5px;font-weight:600}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px 20px;font-weight:600;cursor:pointer;font-size:14px}
+button.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.pill{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:3px 11px;margin-left:8px;vertical-align:2px}
+.pill.ok{background:#e7f3ec;color:var(--green)}
+.pill.warn{background:#fff3e2;color:var(--amber)}
+.pill.err{background:#fde8e8;color:#c0392b}
+.msg{font-size:13.5px;padding:11px 15px;border-radius:8px;margin-top:12px}
+.msg.ok{background:#e7f3ec;color:var(--green)}
+.msg.err{background:#fde8e8;color:#c0392b}
+.drop{border:2px dashed #b8c0d4;border-radius:10px;padding:24px;text-align:center;margin-top:14px}
+.job{border-top:1px solid var(--border);padding:14px 0;font-size:14px}
+.job:first-child{border-top:none}
+.job .out-link{display:inline-block;margin-top:8px;color:var(--accent);font-weight:600;text-decoration:none;font-size:13.5px}
+.job .err-detail{color:#c0392b;font-size:12.5px;margin-top:6px}
+.job .meta{color:#77809a;font-size:12.5px;margin-top:2px}
 </style>
 </head>
 <body>
 <header>
   <a class="logo" href="index.html"><svg width="26" height="26" style="border-radius:5px;vertical-align:middle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Kalque"> <rect width="64" height="64" rx="14" fill="#14213D"/> <g fill="none" stroke="#FCFBF7" stroke-width="3.2" stroke-linecap="round"> <rect x="14" y="12" width="20" height="27" rx="2.5"/> <line x1="18.5" y1="19" x2="29.5" y2="19"/> <line x1="18.5" y1="24.5" x2="26" y2="24.5"/> </g> <g fill="none" stroke="#2D5BE3" stroke-width="3.2" stroke-linecap="round"> <rect x="30" y="25" width="20" height="27" rx="2.5" fill="#14213D"/> <line x1="34.5" y1="32" x2="45.5" y2="32"/> <line x1="34.5" y1="37.5" x2="42" y2="37.5"/> </g> <path d="M39 44.5 L43 48.5 L51 39" fill="none" stroke="#1C7C46" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/> </svg>kalque</a>
-  <span class="demo-pill">DEMO — engine replays a real pre-computed job</span>
+  <div class="whoami"><span id="whoami">Not signed in</span><button class="ghost" id="logout-btn" onclick="signOut()" style="display:none;padding:6px 14px;font-size:13px">Log out</button></div>
 </header>
 <main>
-  <h1>Translate a document</h1>
-  <p class="sub">Upload a paper, book or course pack. Kalque parses it, protects what must not change, translates, verifies — and shows you the proof.</p>
 
-  <div class="drop" id="drop" role="button" tabindex="0" aria-label="Load the sample document">
-    <p style="font-size:16px"><b>Choose a file</b> or drop it here</p>
-    <p class="hint">PDF · EPUB · DOCX · JATS XML — no page caps. In this local demo, any upload loads the pre-computed sample job below (see honesty note).</p>
+<section id="auth-box">
+  <h1>Log in or create an account</h1>
+  <p class="sub">Translate a document for real — every job runs the actual pipeline against the live API.</p>
+  <label>Email</label><input id="email" type="email" placeholder="you@example.com">
+  <label>Password</label><input id="password" type="password" placeholder="at least 6 characters">
+  <div class="row">
+    <button onclick="signUp()">Create account</button>
+    <button class="ghost" onclick="signIn()">Log in</button>
   </div>
+  <div id="auth-msg"></div>
+</section>
 
-  <div class="job" id="job" style="display:none">
-    <div class="job-head">
-      <div>
-        <div class="name">amano2023.xml — “The manifold costs of being a non-native English speaker in science”</div>
-        <div class="meta">PLOS Biology · CC BY 4.0 · EN → PT-BR · 6,352 words · 6 figures · 51 references</div>
-      </div>
-      <span class="status done" id="jobstatus">Processing…</span>
-    </div>
-    <div class="stages" id="stages">
-      <div class="stage pending" data-i="0"><span class="tick"></span><h4>Parse</h4><p>79 segments · 6 figure anchors · 51 refs mapped</p></div>
-      <div class="stage pending" data-i="1"><span class="tick"></span><h4>Protect</h4><p>131 tokens sealed: citations, links, math</p></div>
-      <div class="stage pending" data-i="2"><span class="tick"></span><h4>Translate</h4><p>LLM engine · academic PT-BR register</p></div>
-      <div class="stage pending" data-i="3"><span class="tick"></span><h4>Verify</h4><p>4 checks × 79 segments</p></div>
-    </div>
-    <div class="report-row" id="results" style="display:none">
-      <div class="outputs">
-        <h3>Your documents</h3>
-        <a class="out-link" href="demo/output_ptBR.html"><span><span class="t">Translated document (PT-BR)</span><br><span class="d">Publication layout · figures in place · references untouched</span></span><span class="go">Open →</span></a>
-        <a class="out-link" href="demo/output_side_by_side.html"><span><span class="t">Side-by-side review</span><br><span class="d">EN | PT-BR, segment-aligned, for checking any sentence</span></span><span class="go">Open →</span></a>
-        <a class="out-link" href="demo/qa_report.json"><span><span class="t">Fidelity Report (raw JSON)</span><br><span class="d">Machine-readable, generated by qa_check.py</span></span><span class="go">Open →</span></a>
-      </div>
-      <div class="fr">
-        <h3>Fidelity Report</h3>
-        <table id="frtable"><tr><td>loading…</td><td></td></tr></table>
-        <p class="stamp">Generated 2026-07-09 by the pipeline in <span style="font-family:ui-monospace,Menlo,monospace">product/pipeline/</span> — parse_jats.py → translations → qa_check.py → render.py</p>
-      </div>
-    </div>
-  </div>
+<section id="plan-box" style="display:none">
+  <h2>Your plan <span id="plan-pill" class="pill"></span></h2>
+  <p id="plan-msg" style="font-size:13.5px;color:#55607a"></p>
+  <button id="subscribe-btn" onclick="subscribe()" style="display:none;margin-top:12px">Get Kalque Pro — $9.99/month</button>
+</section>
 
-  <div class="honesty">
-    <b>Honesty note.</b> This is a local demo with no server: the upload control doesn't read your file — it replays a real job that was actually executed by the pipeline in this repository on the CC-BY paper above. The stage timings are theatrical; the outputs and the Fidelity Report are real, byte-for-byte, and you can re-run them yourself: <span style="font-family:ui-monospace,Menlo,monospace">python3 pipeline/parse_jats.py && python3 pipeline/qa_check.py && python3 pipeline/render.py</span>
+<section id="upload-box" style="display:none">
+  <h2>Translate a document</h2>
+  <p class="sub" style="margin-bottom:0">Upload a paper, book or course pack. Kalque parses it, protects what must not change, translates, verifies — and shows you the proof.</p>
+  <div class="drop">
+    <label style="margin-top:0">File (.pdf, .epub, .xml)</label>
+    <input id="file" type="file" accept=".pdf,.epub,.xml,.jats">
+    <label>Translate to</label>
+    <select id="target"></select>
+    <div class="row"><button onclick="uploadFile()">Upload &amp; translate</button></div>
   </div>
+  <div id="upload-msg"></div>
+</section>
+
+<section id="jobs-box" style="display:none">
+  <h2>Your documents</h2>
+  <div id="jobs-list"></div>
+  <div class="row"><button class="ghost" onclick="loadJobs()">Refresh</button></div>
+</section>
+
 </main>
 <script>
-const drop=document.getElementById('drop'),job=document.getElementById('job'),
-stages=[...document.querySelectorAll('.stage')],results=document.getElementById('results'),
-status=document.getElementById('jobstatus');
-function runJob(){
-  job.style.display='block';results.style.display='none';
-  status.textContent='Processing…';status.style.background='#eef2fd';status.style.color='#2D5BE3';
-  stages.forEach(s=>{s.classList.add('pending');s.querySelector('.tick').textContent='';});
-  let i=0;
-  function next(){
-    if(i>0){const prev=stages[i-1].querySelector('.tick');prev.textContent='✓';prev.classList.remove('spin');}
-    if(i>=stages.length){finish();return;}
-    stages[i].classList.remove('pending');
-    const t=stages[i].querySelector('.tick');t.textContent='…';t.classList.add('spin');
-    i++;setTimeout(next,650);
+const API = "https://kalque-backend-production.up.railway.app";
+const SUPABASE_URL = "https://apcoejxentlkrwiaextl.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwY29lanhlbnRsa3J3aWFleHRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3ODkzMDgsImV4cCI6MjA5OTM2NTMwOH0.2KCt2RdO5cphZE4OZrJ-9rr4kVNN8VafheuxJ0woxm4";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let session = null;
+
+function showMsg(elId, text, ok) {
+  document.getElementById(elId).innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${text}</div>`;
+}
+
+async function refreshSession() {
+  const { data } = await sb.auth.getSession();
+  session = data.session;
+  const signedIn = !!session;
+  document.getElementById('whoami').textContent = signedIn ? session.user.email : 'Not signed in';
+  document.getElementById('auth-box').style.display = signedIn ? 'none' : 'block';
+  document.getElementById('plan-box').style.display = signedIn ? 'block' : 'none';
+  document.getElementById('upload-box').style.display = signedIn ? 'block' : 'none';
+  document.getElementById('jobs-box').style.display = signedIn ? 'block' : 'none';
+  document.getElementById('logout-btn').style.display = signedIn ? 'inline-block' : 'none';
+  if (signedIn) { loadJobs(); loadMe(); }
+}
+
+async function signUp() {
+  const email = document.getElementById('email').value, password = document.getElementById('password').value;
+  const { error } = await sb.auth.signUp({ email, password });
+  if (error) return showMsg('auth-msg', error.message, false);
+  showMsg('auth-msg', 'Account created. If email confirmation is enabled, confirm your email before logging in.', true);
+}
+async function signIn() {
+  const email = document.getElementById('email').value, password = document.getElementById('password').value;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) return showMsg('auth-msg', error.message, false);
+  refreshSession();
+}
+async function signOut() { await sb.auth.signOut(); refreshSession(); }
+
+async function loadLanguages() {
+  const res = await fetch(`${API}/api/config`);
+  const cfg = await res.json();
+  const sel = document.getElementById('target');
+  sel.innerHTML = cfg.target_languages.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+}
+
+async function authFetch(path, opts = {}) {
+  opts.headers = { ...(opts.headers || {}), Authorization: `Bearer ${session.access_token}` };
+  const res = await fetch(`${API}${path}`, opts);
+  if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+  return res.json();
+}
+
+async function loadMe() {
+  const me = await authFetch('/api/me');
+  const pill = document.getElementById('plan-pill');
+  const btn = document.getElementById('subscribe-btn');
+  const msg = document.getElementById('plan-msg');
+  if (me.is_admin) {
+    pill.textContent = 'admin'; pill.className = 'pill ok';
+    msg.textContent = 'Full administrator access — unlimited translations, no charge.';
+    btn.style.display = 'none';
+  } else if (me.subscription_active) {
+    pill.textContent = 'Kalque Pro'; pill.className = 'pill ok';
+    msg.textContent = 'Active subscription — unlimited documents, no page caps.';
+    btn.style.display = 'none';
+  } else {
+    pill.textContent = 'Free'; pill.className = 'pill warn';
+    msg.textContent = 'Documents up to 5 pages are free. Beyond that, Kalque Pro ($9.99/month, unlimited) is required.';
+    btn.style.display = 'inline-block';
   }
-  next();
-  job.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function finish(){
-  status.textContent='✓ Complete — all checks passed';
-  status.style.background='#e7f3ec';status.style.color='#1C7C46';
-  results.style.display='grid';
-  fetch('demo/qa_report.json').then(r=>r.json()).then(q=>{
-    const rows=q.checks.map(c=>`<tr><td>${c.name.replace(/_/g,' ')}</td><td>${c.passed}/${c.total} ✓</td></tr>`).join('')
-      +`<tr><td>references translated (rule: never)</td><td>0/51 ✓</td></tr>`;
-    document.getElementById('frtable').innerHTML=rows;
-  }).catch(()=>{
-    document.getElementById('frtable').innerHTML=
-      '<tr><td>coverage</td><td>79/79 ✓</td></tr><tr><td>token safety</td><td>79/79 ✓</td></tr><tr><td>number safety</td><td>79/79 ✓</td></tr><tr><td>tag safety</td><td>79/79 ✓</td></tr><tr><td>references translated (rule: never)</td><td>0/51 ✓</td></tr>';
+
+async function subscribe() {
+  const returnBase = window.location.href.split('?')[0];
+  const data = await authFetch('/api/subscribe', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ return_base: returnBase }),
   });
+  window.location.href = data.checkout_url;
 }
-drop.addEventListener('click',runJob);
-drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')runJob()});
-drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='#2D5BE3'});
-drop.addEventListener('drop',e=>{e.preventDefault();runJob()});
+
+async function uploadFile() {
+  const file = document.getElementById('file').files[0];
+  const target = document.getElementById('target').value;
+  if (!file) return showMsg('upload-msg', 'Choose a file first.', false);
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('target_language', target);
+  showMsg('upload-msg', 'Uploading and analyzing the document…', true);
+  try {
+    const data = await authFetch('/api/jobs/upload', { method: 'POST', body: fd });
+    if (data.free) {
+      showMsg('upload-msg', `${data.pages} pages · within your plan. Starting translation…`, true);
+      await authFetch(`/api/jobs/${data.job_id}/start`, { method: 'POST' });
+      loadJobs();
+    } else {
+      showMsg('upload-msg',
+        `${data.pages} pages — that's beyond the free preview (5 pages). Subscribe to Kalque Pro above to translate this document.`,
+        false);
+    }
+  } catch (e) { showMsg('upload-msg', e.message, false); }
+}
+
+async function loadJobs() {
+  const jobs = await authFetch('/api/jobs');
+  const box = document.getElementById('jobs-list');
+  if (!jobs.length) { box.innerHTML = '<p style="color:#77809a;font-size:13px">No documents yet.</p>'; return; }
+  box.innerHTML = jobs.map(j => {
+    const pillClass = j.status === 'done' ? 'ok' : j.status === 'failed' ? 'err' : 'warn';
+    let extra = '';
+    if (j.status === 'done') extra = `<div><a class="out-link" href="#" onclick="openJob('${j.id}');return false">Open result →</a></div>`;
+    if (j.status === 'failed') extra = `<div class="err-detail">${(j.error_message || '').slice(0, 200)}</div>`;
+    return `<div class="job"><b>${j.source_filename}</b> → ${j.target_language}
+      <span class="pill ${pillClass}">${j.status}</span>
+      <div class="meta">${j.page_count || '?'} pages</div>
+      ${extra}</div>`;
+  }).join('');
+}
+
+async function openJob(jobId) {
+  const job = await authFetch(`/api/jobs/${jobId}`);
+  if (job.urls) {
+    window.open(job.urls.translated.signedURL || job.urls.translated.signed_url, '_blank');
+  }
+}
+
+(async () => {
+  await refreshSession();
+  await loadLanguages();
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('subscribed') === '1' && session) {
+    showMsg('upload-msg', 'Subscription confirmed! You can upload unlimited documents now.', true);
+    await loadMe();
+  }
+  sb.auth.onAuthStateChange((_e, s) => { session = s; refreshSession(); });
+})();
 </script>
 </body>
 </html>
